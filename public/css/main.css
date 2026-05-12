@@ -572,3 +572,14 @@ body {
      혹시 너무 진하면 opacity 조절: */
   /* opacity: 0.85; */
 }
+
+.empty__dedication {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 34px;
+  color: var(--accent);
+  letter-spacing: -.005em;
+  line-height: 1;
+  margin-bottom: 24px;
+}
