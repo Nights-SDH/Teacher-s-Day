@@ -539,3 +539,5 @@ body {
 
 /* Hide while loading */
 .is-loading .nav, .is-loading .dots, .is-loading .tap-hint { opacity: 0; }
+
+.empty[hidden] { display: none; }
