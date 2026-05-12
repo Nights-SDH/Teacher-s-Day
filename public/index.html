@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" />
+  <meta name="theme-color" content="#F4EFE7" />
+  <title>스승의 날 · 우리 교수님께</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="brand-mark"></span>
+      <span class="brand-text">
+        <em>Teacher's Day</em>
+        <span>스승의 날 · 우리 교수님께</span>
+      </span>
+    </div>
+    <div class="topbar__count" id="topbarCount"></div>
+  </header>
+
+  <!-- Image stage -->
+  <main class="stage" id="stage" aria-label="추억 갤러리">
+    <div class="stage__viewport" id="viewport">
+      <!-- slides injected here -->
+    </div>
+
+    <!-- Controls -->
+    <button class="nav nav--prev" id="prevBtn" aria-label="이전">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <button class="nav nav--next" id="nextBtn" aria-label="다음">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+
+    <!-- Tap hint -->
+    <div class="tap-hint" id="tapHint">
+      <span>사진을 탭하면 편지가 보여요</span>
+    </div>
+
+    <!-- Dot indicators -->
+    <div class="dots" id="dots"></div>
+  </main>
+
+  <!-- Empty state -->
+  <section class="empty" id="empty" hidden>
+    <div class="empty__inner">
+      <span class="empty__mark"></span>
+      <h2>아직 올라온 추억이 없어요</h2>
+      <p>첫 번째 학생이 되어 사진과 편지를 남겨주세요.</p>
+      <a class="empty__cta" href="/upload">편지 남기러 가기</a>
+    </div>
+  </section>
+
+  <!-- Letter bottom sheet -->
+  <div class="sheet" id="sheet" aria-hidden="true">
+    <div class="sheet__backdrop" data-close></div>
+    <div class="sheet__panel" id="sheetPanel" role="dialog" aria-modal="true">
+      <div class="sheet__handle" data-close></div>
+
+      <div class="sheet__head">
+        <div class="sheet__title">
+          <span class="sheet__from">from</span>
+          <strong id="letterAuthor">—</strong>
+        </div>
+        <div class="sheet__actions">
+          <button class="iconbtn" id="editBtn" aria-label="편집">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+          </button>
+          <button class="iconbtn" data-close aria-label="닫기">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="sheet__body">
+        <p class="letter" id="letterMessage"></p>
+        <div class="letter__date" id="letterDate"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Password modal -->
+  <div class="modal" id="pwModal" aria-hidden="true">
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel">
+      <h3>비밀번호 확인</h3>
+      <p class="modal__hint">편집을 위해 등록 시 입력한 비밀번호를 입력해 주세요.</p>
+      <input type="password" id="pwInput" placeholder="비밀번호" autocomplete="off" inputmode="text" />
+      <div class="modal__error" id="pwError"></div>
+      <div class="modal__actions">
+        <button class="btn btn--ghost" data-close>취소</button>
+        <button class="btn btn--primary" id="pwSubmit">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit modal -->
+  <div class="modal" id="editModal" aria-hidden="true">
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel modal__panel--wide">
+      <div class="modal__head">
+        <h3>편지 편집</h3>
+        <button class="iconbtn" data-close aria-label="닫기">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <label class="field">
+        <span>이름</span>
+        <input type="text" id="editAuthor" maxlength="40" />
+      </label>
+
+      <label class="field">
+        <span>편지</span>
+        <textarea id="editMessage" rows="6" maxlength="1500"></textarea>
+      </label>
+
+      <label class="field">
+        <span>사진 교체 (선택)</span>
+        <input type="file" id="editImage" accept="image/*" />
+      </label>
+
+      <div class="modal__error" id="editError"></div>
+
+      <div class="modal__actions modal__actions--split">
+        <button class="btn btn--danger" id="deleteBtn">삭제</button>
+        <div class="modal__actions">
+          <button class="btn btn--ghost" data-close>취소</button>
+          <button class="btn btn--primary" id="saveBtn">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>
