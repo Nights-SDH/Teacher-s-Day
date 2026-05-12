@@ -103,6 +103,39 @@
     stage.classList.remove('is-loading');
   }
 
+  async function reload() {
+    stopAuto();
+    try {
+      const res = await fetch('/api/posts');
+      const posts = await res.json();
+      state.posts = shuffle(posts);
+      state.index = 0;
+
+      if (state.posts.length === 0) {
+        emptyEl.hidden = false;
+        stage.style.display = 'none';
+      } else {
+        emptyEl.hidden = true;
+        stage.style.display = '';
+        renderSlides();
+        renderDots();
+        show(0, { silent: true });
+        startAuto();
+      }
+      showToast('업데이트됨');
+    } catch (e) {
+      showToast('새로고침 실패');
+    } finally {
+      // Hide spinner with a bit of delay so the success feels intentional
+      setTimeout(() => {
+        ptr.classList.remove('is-loading', 'is-active');
+        ptr.style.transition = 'transform 280ms var(--ease)';
+        ptr.style.transform  = 'translate(-50%, -60px)';
+        setTimeout(() => { ptr.style.transition = ''; }, 300);
+      }, 400);
+    }
+  }
+
   // ───── Render slides ───────────────────────────────────────────────────
   function renderSlides() {
     viewport.innerHTML = '';
@@ -229,6 +262,59 @@
       if (e.key === 'ArrowRight') { next(); resetAuto(); }
     });
 
+    // ───── Pull-to-Refresh ──────────────────────────────────────────────
+    const ptr = document.getElementById('ptr');
+    let ptrStartY = 0;
+    let ptrPull   = 0;
+    let ptrActive = false;
+    const PTR_THRESHOLD = 80;
+
+    stage.addEventListener('touchstart', (e) => {
+      // Only start PTR when bottom sheet is closed
+      if (sheet.getAttribute('aria-hidden') === 'false') return;
+      ptrStartY = e.touches[0].clientY;
+      ptrPull = 0;
+      ptrActive = false;
+    }, { passive: true });
+
+    stage.addEventListener('touchmove', (e) => {
+      if (sheet.getAttribute('aria-hidden') === 'false') return;
+      const t = e.touches[0];
+      const dy = t.clientY - ptrStartY;
+      const dx = Math.abs(t.clientX - (window._ptrLastX || t.clientX));
+      window._ptrLastX = t.clientX;
+
+      // Only engage PTR if vertical pull is dominant (avoid conflict w/ swipe)
+      if (dy > 10 && Math.abs(t.clientY - ptrStartY) > dx * 2) {
+        ptrPull = Math.min(dy, 150);
+        ptrActive = true;
+        // Translate the indicator down with resistance
+        const eased = Math.min(ptrPull * 0.6, 90) - 60;
+        ptr.style.transform = `translate(-50%, ${eased}px)`;
+        ptr.classList.add('is-active');
+        // Rotate spinner based on pull amount
+        const rot = (ptrPull / PTR_THRESHOLD) * 360;
+        ptr.querySelector('.ptr__spinner').style.transform = `rotate(${rot}deg)`;
+      }
+    }, { passive: true });
+
+    stage.addEventListener('touchend', () => {
+      if (!ptrActive) return;
+      ptrActive = false;
+      if (ptrPull >= PTR_THRESHOLD) {
+        // Trigger refresh
+        ptr.classList.add('is-loading');
+        ptr.style.transform = 'translate(-50%, 20px)';
+        ptr.querySelector('.ptr__spinner').style.transform = '';
+        reload();
+      } else {
+        // Snap back
+        ptr.style.transition = 'transform 280ms var(--ease)';
+        ptr.style.transform  = 'translate(-50%, -60px)';
+        ptr.classList.remove('is-active');
+        setTimeout(() => { ptr.style.transition = ''; }, 300);
+      }
+    });
     // Touch swipe
     let startX = 0, startY = 0, dx = 0, dy = 0, touching = false;
     stage.addEventListener('touchstart', (e) => {
