@@ -167,7 +167,13 @@ body {
   place-items: center;
   z-index: 10;
   cursor: pointer;
-  transition: transform 200ms var(--ease), background 200ms var(--ease), opacity 200ms var(--ease);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 200ms var(--ease), background 200ms var(--ease), opacity 500ms var(--ease);
+}
+.nav.is-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 .nav--prev { left: 14px; }
 .nav--next { right: 14px; }

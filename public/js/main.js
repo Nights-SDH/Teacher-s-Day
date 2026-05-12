@@ -247,11 +247,21 @@
   function stopAuto() {
     if (state.autoTimer) { clearInterval(state.autoTimer); state.autoTimer = null; }
   }
-
+  // ───── Nav visibility (auto-hide) ───────────────────────────────────
+  let navHideTimer = null;
+  function showNav() {
+    prevBtn.classList.add('is-visible');
+    nextBtn.classList.add('is-visible');
+    if (navHideTimer) clearTimeout(navHideTimer);
+    navHideTimer = setTimeout(() => {
+      prevBtn.classList.remove('is-visible');
+      nextBtn.classList.remove('is-visible');
+    }, 2500); // 마지막 인터랙션 후 2.5초 뒤 사라짐
+  }
   // ───── Bind events ─────────────────────────────────────────────────────
   function bindEvents() {
-    prevBtn.addEventListener('click', () => { prev(); resetAuto(); });
-    nextBtn.addEventListener('click', () => { next(); resetAuto(); });
+    prevBtn.addEventListener('click', () => { prev(); resetAuto(); showNav(); });
+    nextBtn.addEventListener('click', () => { next(); resetAuto(); showNav(); });
 
     // Keyboard
     window.addEventListener('keydown', (e) => {
@@ -323,6 +333,7 @@
       startX = t.clientX; startY = t.clientY;
       dx = dy = 0; touching = true;
       state.isInteracting = true;
+      showNav();
     }, { passive: true });
     stage.addEventListener('touchmove', (e) => {
       if (!touching) return;
@@ -339,6 +350,11 @@
         if (dx < 0) next(); else prev();
         resetAuto();
       }
+    });
+    // Desktop: show nav on mouse move
+    stage.addEventListener('mousemove', () => {
+      if (sheet.getAttribute('aria-hidden') === 'false') return;
+      showNav();
     });
 
     // Sheet close
