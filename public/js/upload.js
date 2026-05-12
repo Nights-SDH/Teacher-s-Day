@@ -30,13 +30,6 @@
     showToast._t = setTimeout(() => toast.classList.remove('is-show'), 2400);
   }
 
-  // ───── Image picker ──────────────────────────────────────────────────
-  picker.addEventListener('click', (e) => {
-    if (e.target === clearImage || clearImage.contains(e.target)) return;
-    e.preventDefault();   // ← label의 자동 input.click() 차단
-    imageInput.click();
-  });
-
   imageInput.addEventListener('change', () => {
     const file = imageInput.files && imageInput.files[0];
     if (!file) return;
