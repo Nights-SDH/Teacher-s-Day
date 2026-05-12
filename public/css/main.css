@@ -616,3 +616,5 @@ body {
 @keyframes ptr-spin {
   to { transform: rotate(360deg); }
 }
+
+.empty__mark { display: none; }
