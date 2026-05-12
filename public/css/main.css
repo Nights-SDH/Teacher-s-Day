@@ -541,3 +541,25 @@ body {
 .is-loading .nav, .is-loading .dots, .is-loading .tap-hint { opacity: 0; }
 
 .empty[hidden] { display: none; }
+
+/* Top bar right upload button */
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+}
+.addbtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  box-shadow: 0 6px 16px -6px rgba(28, 24, 20, 0.4);
+  transition: transform 180ms var(--ease), background 180ms var(--ease);
+}
+.addbtn:active { transform: scale(.92); }
+.addbtn:hover { background: #000; }
