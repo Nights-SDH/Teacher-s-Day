@@ -563,3 +563,12 @@ body {
 }
 .addbtn:active { transform: scale(.92); }
 .addbtn:hover { background: #000; }
+
+.brand-logo {
+  height: 26px;
+  width: auto;
+  display: block;
+  /* 로고가 어두운 색이라 밝은 배경에서 잘 보임. 
+     혹시 너무 진하면 opacity 조절: */
+  /* opacity: 0.85; */
+}

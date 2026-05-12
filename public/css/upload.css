@@ -329,3 +329,8 @@ body {
   text-align: center;
 }
 .toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+.brand-logo {
+  height: 28px;
+  width: auto;
+  display: block;
+}
