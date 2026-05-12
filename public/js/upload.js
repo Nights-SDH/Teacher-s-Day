@@ -33,6 +33,7 @@
   // ───── Image picker ──────────────────────────────────────────────────
   picker.addEventListener('click', (e) => {
     if (e.target === clearImage || clearImage.contains(e.target)) return;
+    e.preventDefault();   // ← label의 자동 input.click() 차단
     imageInput.click();
   });
 
@@ -51,6 +52,7 @@
   });
 
   clearImage.addEventListener('click', (e) => {
+    e.preventDefault();   // ← clear 버튼이 label 안에 있어서 이것도 필요
     e.stopPropagation();
     imageInput.value = '';
     preview.src = '';
