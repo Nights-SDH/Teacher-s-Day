@@ -674,3 +674,94 @@ body {
   color: var(--bg);
   border-color: var(--ink);
 }
+
+/* ───── Mobile dropdown menu ───── */
+.menu {
+  position: relative;
+  display: none;          /* hidden on desktop */
+  pointer-events: auto;
+}
+
+.menubtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--ink);
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -6px rgba(28, 24, 20, 0.4);
+  transition: transform 220ms var(--ease), background 220ms var(--ease);
+}
+.menubtn:active { transform: scale(.92); }
+.menubtn svg { transition: transform 280ms var(--ease-out); }
+.menu.is-open .menubtn svg { transform: rotate(45deg); }   /* + → × */
+
+.menu__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 180px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 6px;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(-8px) scale(0.96);
+  transform-origin: top right;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease), transform 240ms var(--ease-out);
+  z-index: 50;
+}
+.menu.is-open .menu__panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.menu__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 0;
+  background: transparent;
+  border-radius: 10px;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14.5px;
+  font-weight: 500;
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms var(--ease);
+  white-space: nowrap;
+}
+.menu__item:active,
+.menu__item:hover {
+  background: var(--bg-soft);
+}
+.menu__item svg { flex-shrink: 0; color: var(--ink-soft); }
+.menu__item strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  margin-left: 4px;
+  color: var(--accent);
+}
+
+/* Music icon toggle inside menu */
+.menu__item .menu__icon-on { display: none; }
+.menu__item.is-playing .menu__icon-off { display: none; }
+.menu__item.is-playing .menu__icon-on  { display: inline-block; color: var(--accent); }
+
+/* Mobile: swap inline buttons for menu */
+@media (max-width: 640px) {
+  .topbar__inline { display: none !important; }
+  .menu          { display: block; }
+}

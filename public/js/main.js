@@ -634,6 +634,75 @@
       startAuto();  // restart with new interval
     });
   }
+
+  // ───── Mobile menu (dropdown) ────────────────────────────────────────
+  const menu       = document.getElementById('menu');
+  const menuBtn    = document.getElementById('menuBtn');
+  const menuPanel  = document.getElementById('menuPanel');
+  const menuMusic  = document.getElementById('menuMusic');
+  const menuMusicLabel = document.getElementById('menuMusicLabel');
+  const menuSpeed  = document.getElementById('menuSpeed');
+  const menuSpeedLabel = document.getElementById('menuSpeedLabel');
+
+  if (menu && menuBtn) {
+    function openMenu() {
+      menu.classList.add('is-open');
+      menuBtn.setAttribute('aria-expanded', 'true');
+      menuPanel.setAttribute('aria-hidden', 'false');
+    }
+    function closeMenu() {
+      menu.classList.remove('is-open');
+      menuBtn.setAttribute('aria-expanded', 'false');
+      menuPanel.setAttribute('aria-hidden', 'true');
+    }
+    function toggleMenu() {
+      if (menu.classList.contains('is-open')) closeMenu();
+      else openMenu();
+    }
+
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMenu();
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!menu.classList.contains('is-open')) return;
+      if (!menu.contains(e.target)) closeMenu();
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.classList.contains('is-open')) closeMenu();
+    });
+
+    // Music item in menu — proxies the existing music button
+    if (menuMusic) {
+      menuMusic.addEventListener('click', (e) => {
+        e.stopPropagation();
+        musicBtn.click();   // delegate to existing handler
+        // Update menu label/state after a tick (music button toggles class)
+        setTimeout(() => {
+          const playing = musicBtn.classList.contains('is-playing');
+          menuMusic.classList.toggle('is-playing', playing);
+          menuMusicLabel.textContent = playing ? '음악 끄기' : '음악 켜기';
+        }, 50);
+      });
+    }
+
+    // Speed item in menu — proxies the existing speed button
+    if (menuSpeed) {
+      menuSpeed.addEventListener('click', (e) => {
+        e.stopPropagation();
+        speedBtn.click();   // delegate to existing handler
+        // Update menu label after a tick
+        setTimeout(() => {
+          menuSpeedLabel.textContent = state.autoMs === 10000 ? '10초' : '5초';
+        }, 50);
+      });
+    }
+  }
+
   // Boot
   document.addEventListener('DOMContentLoaded', boot);
 })();
