@@ -571,6 +571,51 @@
     }
   }
 
+  // ───── BGM toggle ─────────────────────────────────────────────────────
+  const bgm = document.getElementById('bgm');
+  const musicBtn = document.getElementById('musicBtn');
+  let bgmFadeTimer = null;
+
+  if (bgm && musicBtn) {
+    bgm.volume = 0;
+
+    musicBtn.addEventListener('click', () => {
+      const isPlaying = !bgm.paused;
+      if (isPlaying) {
+        // Fade out then pause
+        fadeBgm(0, () => bgm.pause());
+        musicBtn.classList.remove('is-playing');
+        musicBtn.setAttribute('aria-pressed', 'false');
+        musicBtn.setAttribute('aria-label', '음악 켜기');
+      } else {
+        // Play and fade in
+        bgm.play().then(() => {
+          fadeBgm(0.4);
+          musicBtn.classList.add('is-playing');
+          musicBtn.setAttribute('aria-pressed', 'true');
+          musicBtn.setAttribute('aria-label', '음악 끄기');
+        }).catch((err) => {
+          console.warn('BGM play failed:', err);
+        });
+      }
+    });
+
+    function fadeBgm(target, onDone) {
+      if (bgmFadeTimer) clearInterval(bgmFadeTimer);
+      const step = (target > bgm.volume ? 1 : -1) * 0.04;
+      bgmFadeTimer = setInterval(() => {
+        const next = bgm.volume + step;
+        if ((step > 0 && next >= target) || (step < 0 && next <= target)) {
+          bgm.volume = target;
+          clearInterval(bgmFadeTimer);
+          bgmFadeTimer = null;
+          if (onDone) onDone();
+        } else {
+          bgm.volume = Math.max(0, Math.min(1, next));
+        }
+      }, 60);
+    }
+  }
   // Boot
   document.addEventListener('DOMContentLoaded', boot);
 })();

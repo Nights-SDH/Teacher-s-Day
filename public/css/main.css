@@ -624,3 +624,24 @@ body {
 }
 
 .empty__mark { display: none; }
+
+.musicbtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 180ms var(--ease), background 180ms var(--ease);
+}
+.musicbtn:active { transform: scale(.92); }
+
+/* Show muted icon by default, playing icon when active */
+.musicbtn .musicbtn__on  { display: none; }
+.musicbtn.is-playing .musicbtn__off { display: none; }
+.musicbtn.is-playing .musicbtn__on  { display: block; color: var(--accent); }
