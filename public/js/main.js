@@ -701,6 +701,32 @@
         }, 50);
       });
     }
+
+    // Contact item in menu
+    const menuContact = document.getElementById('menuContact');
+    if (menuContact) {
+      menuContact.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeMenu();
+        openContact();
+      });
+    }
+
+    // ───── Contact modal ─────────────────────────────────────────────────
+    const contactModal = document.getElementById('contactModal');
+    const contactBtn   = document.getElementById('contactBtn');
+
+    function openContact()  { if (contactModal) contactModal.setAttribute('aria-hidden', 'false'); }
+    function closeContact() { if (contactModal) contactModal.setAttribute('aria-hidden', 'true');  }
+
+    if (contactBtn) {
+      contactBtn.addEventListener('click', openContact);
+    }
+    if (contactModal) {
+      contactModal.querySelectorAll('[data-close]').forEach((el) =>
+        el.addEventListener('click', closeContact)
+      );
+    }
   }
 
   // Boot
