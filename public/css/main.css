@@ -645,3 +645,30 @@ body {
 .musicbtn .musicbtn__on  { display: none; }
 .musicbtn.is-playing .musicbtn__off { display: none; }
 .musicbtn.is-playing .musicbtn__on  { display: block; color: var(--accent); }
+
+.speedbtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+  transition: transform 180ms var(--ease), background 180ms var(--ease), color 180ms var(--ease);
+  padding: 0;
+}
+.speedbtn:active { transform: scale(.92); }
+.speedbtn.is-slow {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}

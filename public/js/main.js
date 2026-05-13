@@ -616,6 +616,24 @@
       }, 60);
     }
   }
+
+  // ───── Speed toggle (5s ↔ 10s) ────────────────────────────────────────
+  const speedBtn = document.getElementById('speedBtn');
+  const speedLabel = document.getElementById('speedLabel');
+  if (speedBtn) {
+    speedBtn.addEventListener('click', () => {
+      if (state.autoMs === 5000) {
+        state.autoMs = 10000;
+        speedLabel.textContent = '10s';
+        speedBtn.classList.add('is-slow');
+      } else {
+        state.autoMs = 5000;
+        speedLabel.textContent = '5s';
+        speedBtn.classList.remove('is-slow');
+      }
+      startAuto();  // restart with new interval
+    });
+  }
   // Boot
   document.addEventListener('DOMContentLoaded', boot);
 })();
