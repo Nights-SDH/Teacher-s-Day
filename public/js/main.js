@@ -570,6 +570,164 @@
     }
   }
 
+  // ───── BGM toggle ─────────────────────────────────────────────────────
+  const bgm = document.getElementById('bgm');
+  const musicBtn = document.getElementById('musicBtn');
+  let bgmFadeTimer = null;
+
+  if (bgm && musicBtn) {
+    bgm.volume = 0;
+
+    musicBtn.addEventListener('click', () => {
+      const isPlaying = !bgm.paused;
+      if (isPlaying) {
+        // Fade out then pause
+        fadeBgm(0, () => bgm.pause());
+        musicBtn.classList.remove('is-playing');
+        musicBtn.setAttribute('aria-pressed', 'false');
+        musicBtn.setAttribute('aria-label', '음악 켜기');
+      } else {
+        // Play and fade in
+        bgm.play().then(() => {
+          fadeBgm(0.4);
+          musicBtn.classList.add('is-playing');
+          musicBtn.setAttribute('aria-pressed', 'true');
+          musicBtn.setAttribute('aria-label', '음악 끄기');
+        }).catch((err) => {
+          console.warn('BGM play failed:', err);
+        });
+      }
+    });
+
+    function fadeBgm(target, onDone) {
+      if (bgmFadeTimer) clearInterval(bgmFadeTimer);
+      const step = (target > bgm.volume ? 1 : -1) * 0.04;
+      bgmFadeTimer = setInterval(() => {
+        const next = bgm.volume + step;
+        if ((step > 0 && next >= target) || (step < 0 && next <= target)) {
+          bgm.volume = target;
+          clearInterval(bgmFadeTimer);
+          bgmFadeTimer = null;
+          if (onDone) onDone();
+        } else {
+          bgm.volume = Math.max(0, Math.min(1, next));
+        }
+      }, 60);
+    }
+  }
+
+  // ───── Speed toggle (5s ↔ 10s) ────────────────────────────────────────
+  const speedBtn = document.getElementById('speedBtn');
+  const speedLabel = document.getElementById('speedLabel');
+  if (speedBtn) {
+    speedBtn.addEventListener('click', () => {
+      if (state.autoMs === 5000) {
+        state.autoMs = 10000;
+        speedLabel.textContent = '10s';
+        speedBtn.classList.add('is-slow');
+      } else {
+        state.autoMs = 5000;
+        speedLabel.textContent = '5s';
+        speedBtn.classList.remove('is-slow');
+      }
+      startAuto();  // restart with new interval
+    });
+  }
+
+  // ───── Mobile menu (dropdown) ────────────────────────────────────────
+  const menu       = document.getElementById('menu');
+  const menuBtn    = document.getElementById('menuBtn');
+  const menuPanel  = document.getElementById('menuPanel');
+  const menuMusic  = document.getElementById('menuMusic');
+  const menuMusicLabel = document.getElementById('menuMusicLabel');
+  const menuSpeed  = document.getElementById('menuSpeed');
+  const menuSpeedLabel = document.getElementById('menuSpeedLabel');
+
+  if (menu && menuBtn) {
+    function openMenu() {
+      menu.classList.add('is-open');
+      menuBtn.setAttribute('aria-expanded', 'true');
+      menuPanel.setAttribute('aria-hidden', 'false');
+    }
+    function closeMenu() {
+      menu.classList.remove('is-open');
+      menuBtn.setAttribute('aria-expanded', 'false');
+      menuPanel.setAttribute('aria-hidden', 'true');
+    }
+    function toggleMenu() {
+      if (menu.classList.contains('is-open')) closeMenu();
+      else openMenu();
+    }
+
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMenu();
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!menu.classList.contains('is-open')) return;
+      if (!menu.contains(e.target)) closeMenu();
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.classList.contains('is-open')) closeMenu();
+    });
+
+    // Music item in menu — proxies the existing music button
+    if (menuMusic) {
+      menuMusic.addEventListener('click', (e) => {
+        e.stopPropagation();
+        musicBtn.click();   // delegate to existing handler
+        // Update menu label/state after a tick (music button toggles class)
+        setTimeout(() => {
+          const playing = musicBtn.classList.contains('is-playing');
+          menuMusic.classList.toggle('is-playing', playing);
+          menuMusicLabel.textContent = playing ? '음악 끄기' : '음악 켜기';
+        }, 50);
+      });
+    }
+
+    // Speed item in menu — proxies the existing speed button
+    if (menuSpeed) {
+      menuSpeed.addEventListener('click', (e) => {
+        e.stopPropagation();
+        speedBtn.click();   // delegate to existing handler
+        // Update menu label after a tick
+        setTimeout(() => {
+          menuSpeedLabel.textContent = state.autoMs === 10000 ? '10초' : '5초';
+        }, 50);
+      });
+    }
+
+    // Contact item in menu
+    const menuContact = document.getElementById('menuContact');
+    if (menuContact) {
+      menuContact.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeMenu();
+        openContact();
+      });
+    }
+
+    // ───── Contact modal ─────────────────────────────────────────────────
+    const contactModal = document.getElementById('contactModal');
+    const contactBtn   = document.getElementById('contactBtn');
+
+    function openContact()  { if (contactModal) contactModal.setAttribute('aria-hidden', 'false'); }
+    function closeContact() { if (contactModal) contactModal.setAttribute('aria-hidden', 'true');  }
+
+    if (contactBtn) {
+      contactBtn.addEventListener('click', openContact);
+    }
+    if (contactModal) {
+      contactModal.querySelectorAll('[data-close]').forEach((el) =>
+        el.addEventListener('click', closeContact)
+      );
+    }
+  }
+
   // Boot
   document.addEventListener('DOMContentLoaded', boot);
 })();
