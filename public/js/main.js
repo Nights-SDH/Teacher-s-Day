@@ -157,19 +157,18 @@
   }
 
   function renderDots() {
-    dotsEl.innerHTML = '';
-    state.posts.forEach((_, i) => {
-      const d = document.createElement('span');
-      d.className = 'dot' + (i === 0 ? ' is-active' : '');
-      dotsEl.appendChild(d);
-    });
+    // Progress bar — single fill element, scales with index regardless of count
+    dotsEl.innerHTML = '<div class="dots__fill" id="dotsFill"></div>';
   }
 
   function updateCount() {
-    countEl.textContent = `${state.index + 1} / ${state.posts.length}`;
-    Array.from(dotsEl.children).forEach((d, i) =>
-      d.classList.toggle('is-active', i === state.index)
-    );
+    const total = state.posts.length;
+    countEl.textContent = `${state.index + 1} / ${total}`;
+    const fill = document.getElementById('dotsFill');
+    if (fill) {
+      const pct = total <= 1 ? 100 : ((state.index + 1) / total) * 100;
+      fill.style.width = `${pct}%`;
+    }
   }
 
   // ───── Navigation ──────────────────────────────────────────────────────
