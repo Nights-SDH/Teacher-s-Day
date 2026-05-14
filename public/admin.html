@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#F4EFE7" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>관리자 · 스승의 날</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+  <!-- Login screen -->
+  <section class="login" id="loginScreen">
+    <div class="login__panel">
+      <div class="login__brand">
+        <img src="/logo.png" alt="LAVA Lab" />
+        <span><em>Admin</em></span>
+      </div>
+      <h1>관리자 인증</h1>
+      <p>관리자 비밀번호를 입력하세요.</p>
+      <input type="password" id="adminPw" placeholder="비밀번호" autocomplete="off" />
+      <div class="login__error" id="loginError"></div>
+      <button id="loginBtn" class="btn btn--primary">확인</button>
+    </div>
+  </section>
+
+  <!-- Admin dashboard -->
+  <main class="admin" id="adminScreen" hidden>
+    <header class="admin__head">
+      <div class="admin__brand">
+        <img src="/logo.png" alt="LAVA Lab" />
+        <span><em>Admin</em> · 게시물 관리</span>
+      </div>
+      <div class="admin__count" id="adminCount"></div>
+    </header>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="admin__empty" id="adminEmpty" hidden>
+      <p>게시물이 없습니다.</p>
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>

@@ -15,6 +15,9 @@ const bcrypt = require('bcryptjs');
 // ───── Paths ─────────────────────────────────────────────────────────────
 // On Railway, mount a persistent volume at /data so the DB + images survive
 // re-deploys. Locally it falls back to ./data.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+const ADMIN_PATH = process.env.ADMIN_PATH || 'manage-7f3a9c2e';
+
 const DATA_DIR = process.env.DATA_DIR
   || (fs.existsSync('/data') && isWritable('/data') ? '/data' : path.join(__dirname, 'data'));
 const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
@@ -111,6 +114,46 @@ function findPost(id) {
 }
 
 // ───── Routes ────────────────────────────────────────────────────────────
+// ───── Admin ─────────────────────────────────────────────────────────
+// Serve the admin page only at the secret path
+app.get(`/${ADMIN_PATH}`, (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Admin login — returns a list of all posts (with timestamps) if pw matches
+app.post('/api/admin/login', (req, res) => {
+  if (!ADMIN_PASSWORD) {
+    return res.status(503).json({ error: 'Admin password not configured.' });
+  }
+  if (String(req.body.password || '') !== ADMIN_PASSWORD) {
+    return res.status(403).json({ error: 'Wrong password.' });
+  }
+  const store = loadStore();
+  const posts = store.posts
+    .slice()
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .map(postPublic);
+  res.json({ ok: true, posts });
+});
+
+// Admin delete — requires the admin password
+app.delete('/api/admin/posts/:id', async (req, res) => {
+  if (!ADMIN_PASSWORD) {
+    return res.status(503).json({ error: 'Admin password not configured.' });
+  }
+  if (String(req.body.password || '') !== ADMIN_PASSWORD) {
+    return res.status(403).json({ error: 'Wrong password.' });
+  }
+  const store = loadStore();
+  const idx = store.posts.findIndex((p) => p.id === Number(req.params.id));
+  if (idx === -1) return res.status(404).json({ error: 'Not found.' });
+  const p = store.posts[idx];
+  const filePath = path.join(UPLOADS_DIR, p.image_file);
+  if (fs.existsSync(filePath)) { try { fs.unlinkSync(filePath); } catch {} }
+  store.posts.splice(idx, 1);
+  await saveStore();
+  res.json({ ok: true });
+});
 
 // Upload page (separate path per requirement #2)
 app.get('/upload', (_req, res) => {
