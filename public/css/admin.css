@@ -217,3 +217,5 @@ body {
   transition: opacity 280ms var(--ease), transform 280ms var(--ease);
 }
 .toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+[hidden] { display: none !important; }

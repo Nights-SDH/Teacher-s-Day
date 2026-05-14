@@ -52,6 +52,7 @@
       adminPassword = pw;
       loginScreen.hidden = true;
       adminScreen.hidden = false;
+      showToast('로그인 성공');
       render(data.posts);
     } catch (e) {
       loginError.textContent = '네트워크 오류';
