@@ -529,7 +529,7 @@
     const p = state.posts[state.index];
     if (!p) return;
     const confirmed = window.confirm(
-      `정말 삭제하시겠어요?\n\n"${p.author}" 님이 남긴 추억이 사라집니다.\n이 작업은 되돌릴 수 없어요.`
+      `정말 삭제하시겠어요?\n\n"${p.author}" 님이 남긴 메시지가 사라집니다.\n이 작업은 되돌릴 수 없어요.`
     );
     if (!confirmed) return;
 
