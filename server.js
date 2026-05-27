@@ -17,6 +17,7 @@ const bcrypt = require('bcryptjs');
 // re-deploys. Locally it falls back to ./data.
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const ADMIN_PATH = process.env.ADMIN_PATH || 'manage-7f3a9c2e';
+const RECIPIENT_PATH = process.env.RECIPIENT_PATH || 'for-yoonji-private';
 
 const DATA_DIR = process.env.DATA_DIR
   || (fs.existsSync('/data') && isWritable('/data') ? '/data' : path.join(__dirname, 'data'));
@@ -118,6 +119,11 @@ function findPost(id) {
 // Serve the admin page only at the secret path
 app.get(`/${ADMIN_PATH}`, (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Recipient-only page — all letters visible without password
+app.get(`/${RECIPIENT_PATH}`, (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'recipient.html'));
 });
 
 // Admin login — returns a list of all posts (with timestamps) if pw matches

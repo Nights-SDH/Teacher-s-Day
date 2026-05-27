@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" />
   <meta name="theme-color" content="#F4EFE7" />
-  <title>생일 축하해 · 윤지에게</title>
+  <title>생일 축하해 · 윤지에게 (전체 보기)</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -57,13 +57,6 @@
         </svg>
       </button>
 
-      <a class="addbtn topbar__inline" href="/upload" aria-label="편지 남기기">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </a>
-
       <!-- Mobile menu trigger (hidden on desktop) -->
       <div class="menu" id="menu">
         <button class="menubtn" id="menuBtn" aria-label="메뉴" aria-expanded="false" type="button">
@@ -74,14 +67,6 @@
         </button>
 
         <div class="menu__panel" id="menuPanel" aria-hidden="true">
-          <a class="menu__item" href="/upload">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"></line>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-            <span>편지 남기기</span>
-          </a>
-
           <button class="menu__item" id="menuMusic" type="button">
             <svg class="menu__icon-off" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -134,7 +119,7 @@
 
     <!-- Tap hint -->
     <div class="tap-hint" id="tapHint">
-      <span>사진을 탭하면 편지를 열 수 있어요</span>
+      <span>사진을 탭하면 편지가 보여요</span>
     </div>
 
     <!-- Dot indicators -->
@@ -148,7 +133,6 @@
       <span class="empty__mark"></span>
       <h2>아직 올라온 축하 메시지가 없어요</h2>
       <p>첫 번째로 사진과 편지를 남겨주세요.</p>
-      <a class="empty__cta" href="/upload">편지 남기러 가기</a>
     </div>
   </section>
 
@@ -164,9 +148,6 @@
           <strong id="letterAuthor">—</strong>
         </div>
         <div class="sheet__actions">
-          <button class="iconbtn" id="editBtn" aria-label="편집">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"></path></svg>
-          </button>
           <button class="iconbtn" data-close aria-label="닫기">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
@@ -176,59 +157,6 @@
       <div class="sheet__body">
         <p class="letter" id="letterMessage"></p>
         <div class="letter__date" id="letterDate"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Password modal -->
-  <div class="modal" id="pwModal" aria-hidden="true">
-    <div class="modal__backdrop" data-close></div>
-    <div class="modal__panel">
-      <h3>비밀번호 확인</h3>
-      <p class="modal__hint" id="pwHint">편지를 보려면 등록 시 입력한 비밀번호를 입력해 주세요.</p>
-      <input type="password" id="pwInput" placeholder="비밀번호" autocomplete="off" inputmode="text" />
-      <div class="modal__error" id="pwError"></div>
-      <div class="modal__actions">
-        <button class="btn btn--ghost" data-close>취소</button>
-        <button class="btn btn--primary" id="pwSubmit">확인</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Edit modal -->
-  <div class="modal" id="editModal" aria-hidden="true">
-    <div class="modal__backdrop" data-close></div>
-    <div class="modal__panel modal__panel--wide">
-      <div class="modal__head">
-        <h3>편지 편집</h3>
-        <button class="iconbtn" data-close aria-label="닫기">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-
-      <label class="field">
-        <span>이름</span>
-        <input type="text" id="editAuthor" maxlength="40" />
-      </label>
-
-      <label class="field">
-        <span>편지</span>
-        <textarea id="editMessage" rows="6" maxlength="1500"></textarea>
-      </label>
-
-      <label class="field">
-        <span>사진 교체 (선택)</span>
-        <input type="file" id="editImage" accept="image/*" />
-      </label>
-
-      <div class="modal__error" id="editError"></div>
-
-      <div class="modal__actions modal__actions--split">
-        <button class="btn btn--danger" id="deleteBtn">삭제</button>
-        <div class="modal__actions">
-          <button class="btn btn--ghost" data-close>취소</button>
-          <button class="btn btn--primary" id="saveBtn">저장</button>
-        </div>
       </div>
     </div>
   </div>
@@ -285,6 +213,6 @@
   <!-- Toast -->
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="/js/main.js"></script>
+  <script src="/js/recipient.js"></script>
 </body>
 </html>
