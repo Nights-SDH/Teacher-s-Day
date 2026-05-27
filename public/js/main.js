@@ -40,12 +40,13 @@
   const pwHint    = $('pwHint');
 
   const editModal = $('editModal');
-  const editAuthor   = $('editAuthor');
-  const editMessage  = $('editMessage');
-  const editImage    = $('editImage');
-  const editError    = $('editError');
-  const saveBtn      = $('saveBtn');
-  const deleteBtn    = $('deleteBtn');
+  const editAuthor    = $('editAuthor');
+  const editMessage   = $('editMessage');
+  const editImage     = $('editImage');
+  const editIsPrivate = $('editIsPrivate');
+  const editError     = $('editError');
+  const saveBtn       = $('saveBtn');
+  const deleteBtn     = $('deleteBtn');
 
   const toast = $('toast');
 
@@ -139,13 +140,28 @@
   }
 
   // ───── Render slides ───────────────────────────────────────────────────
-  function renderSlides() {
-    viewport.innerHTML = '';
-    state.posts.forEach((p, i) => {
-      const slide = document.createElement('div');
-      slide.className = 'slide';
-      slide.dataset.index = i;
+  function buildSlideContent(slide, p, i) {
+    slide.innerHTML = '';
+    if (p.is_private) {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'slide__private';
+      placeholder.addEventListener('click', () => openLetter(i));
 
+      const lockDiv = document.createElement('div');
+      lockDiv.className = 'slide__private-lock';
+      lockDiv.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
+
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'slide__private-name';
+      nameDiv.textContent = p.author;
+
+      const hintDiv = document.createElement('div');
+      hintDiv.className = 'slide__private-hint';
+      hintDiv.textContent = '탭해서 비밀번호로 열기';
+
+      placeholder.append(lockDiv, nameDiv, hintDiv);
+      slide.appendChild(placeholder);
+    } else {
       const img = document.createElement('img');
       img.className = 'slide__img';
       img.src = p.image_url;
@@ -153,7 +169,16 @@
       img.draggable = false;
       img.addEventListener('click', () => openLetter(i));
       slide.appendChild(img);
+    }
+  }
 
+  function renderSlides() {
+    viewport.innerHTML = '';
+    state.posts.forEach((p, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'slide';
+      slide.dataset.index = i;
+      buildSlideContent(slide, p, i);
       viewport.appendChild(slide);
     });
   }
@@ -431,6 +456,23 @@
   function showLetter(i) {
     const p = state.posts[i];
     if (!p) return;
+
+    // Reveal private photo now that password is verified
+    if (p.is_private) {
+      const slides = viewport.querySelectorAll('.slide');
+      const slide = slides[i];
+      const placeholder = slide && slide.querySelector('.slide__private');
+      if (placeholder) {
+        const img = document.createElement('img');
+        img.className = 'slide__img';
+        img.src = p.image_url;
+        img.alt = `${p.author}님의 사진`;
+        img.draggable = false;
+        img.addEventListener('click', () => openLetter(i));
+        slide.replaceChild(img, placeholder);
+      }
+    }
+
     letterAuthor.textContent = p.author;
     letterMessage.textContent = p.message;
     letterDate.textContent = formatDate(p.created_at);
@@ -497,6 +539,7 @@
     editAuthor.value = p.author;
     editMessage.value = p.message;
     editImage.value = '';
+    if (editIsPrivate) editIsPrivate.checked = p.is_private || false;
     editError.textContent = '';
     setHidden(editModal, false);
   }
@@ -518,9 +561,10 @@
     editError.textContent = '';
     try {
       const form = new FormData();
-      form.append('author', author);
-      form.append('message', message);
-      form.append('password', state.verifiedPassword || '');
+      form.append('author',     author);
+      form.append('message',    message);
+      form.append('password',   state.verifiedPassword || '');
+      form.append('is_private', editIsPrivate && editIsPrivate.checked ? 'true' : 'false');
       if (editImage.files && editImage.files[0]) {
         form.append('image', editImage.files[0]);
       }
@@ -532,10 +576,15 @@
       }
       // Update local state
       state.posts[state.index] = { ...state.posts[state.index], ...data };
-      // refresh image (bust cache by appending a timestamp)
+      // Re-render slide (handles public ↔ private toggle change)
       const slides = viewport.querySelectorAll('.slide');
-      const img = slides[state.index].querySelector('img');
-      img.src = data.image_url + '?t=' + Date.now();
+      const slide = slides[state.index];
+      if (slide) {
+        buildSlideContent(slide, state.posts[state.index], state.index);
+        // Bust cache on the newly created image if it exists
+        const newImg = slide.querySelector('.slide__img');
+        if (newImg) newImg.src = data.image_url + '?t=' + Date.now();
+      }
       letterAuthor.textContent = data.author;
       letterMessage.textContent = data.message;
       closeEditModal();

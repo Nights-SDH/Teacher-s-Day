@@ -11,7 +11,8 @@
       "Bash(node -e \"const s = require\\('./server.js'\\); \")",
       "Bash(node --check server.js)",
       "Bash(node --check public/js/main.js)",
-      "Bash(node --check public/js/recipient.js)"
+      "Bash(node --check public/js/recipient.js)",
+      "Bash(node --check public/js/upload.js)"
     ]
   }
 }

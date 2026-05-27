@@ -11,6 +11,7 @@
   const author      = $('author');
   const message     = $('message');
   const password    = $('password');
+  const isPrivate   = $('isPrivate');
   const charCount   = $('charCount');
   const formError   = $('formError');
   const submitBtn   = $('submitBtn');
@@ -185,10 +186,11 @@
       // 3) Upload
       setBtnText('편지 보내는 중...');
       const fd = new FormData();
-      fd.append('author',   author.value.trim());
-      fd.append('message',  message.value.trim());
-      fd.append('password', password.value);
-      fd.append('image',    optimized);
+      fd.append('author',     author.value.trim());
+      fd.append('message',    message.value.trim());
+      fd.append('password',   password.value);
+      fd.append('is_private', isPrivate && isPrivate.checked ? 'true' : 'false');
+      fd.append('image',      optimized);
 
       const res = await fetch('/api/posts', { method: 'POST', body: fd });
       const data = await res.json().catch(() => ({}));

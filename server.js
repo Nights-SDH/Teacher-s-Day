@@ -106,6 +106,7 @@ function postPublic(p) {
     message: p.message,
     created_at: p.created_at,
     image_url: `/api/posts/${p.id}/image`,
+    is_private: p.is_private || false,
   };
 }
 
@@ -192,6 +193,7 @@ app.post('/api/posts', upload.single('image'), async (req, res) => {
     const author = sanitizeText(req.body.author, 40);
     const message = sanitizeText(req.body.message, 1500);
     const password = typeof req.body.password === 'string' ? req.body.password : '';
+    const is_private = req.body.is_private === 'true' || req.body.is_private === true;
 
     if (!author)  return res.status(400).json({ error: '이름을 입력해주세요.' });
     if (!message) return res.status(400).json({ error: '편지를 입력해주세요.' });
@@ -208,6 +210,7 @@ app.post('/api/posts', upload.single('image'), async (req, res) => {
       image_file: req.file.filename,
       image_mime: req.file.mimetype,
       password_hash: hash,
+      is_private,
       created_at: new Date().toISOString(),
     };
     store.posts.push(post);
@@ -245,8 +248,9 @@ app.put('/api/posts/:id', upload.single('image'), async (req, res) => {
       return res.status(403).json({ error: '비밀번호가 일치하지 않습니다.' });
     }
 
-    if (req.body.author !== undefined)  p.author = sanitizeText(req.body.author, 40) || p.author;
-    if (req.body.message !== undefined) p.message = sanitizeText(req.body.message, 1500) || p.message;
+    if (req.body.author !== undefined)     p.author     = sanitizeText(req.body.author, 40) || p.author;
+    if (req.body.message !== undefined)    p.message    = sanitizeText(req.body.message, 1500) || p.message;
+    if (req.body.is_private !== undefined) p.is_private = req.body.is_private === 'true';
 
     if (req.file) {
       const oldPath = path.join(UPLOADS_DIR, p.image_file);
