@@ -1,96 +1,101 @@
-# 🌿 Teacher's Day · 우리 교수님께
+# 🦕 Haeryong Dinosaur Era
 
-랩실 학생들이 사진과 편지를 모아 교수님께 드리는 스승의 날 헌정 페이지.
+1주년 기념 · 별명 도감 형식의 빈티지 박물관 컨셉 페이지.
+
+## 컨셉
+
+빈티지 자연사 박물관의 표본 카드(specimen plate) 형식으로,
+여자친구의 사진마다 별명을 붙여 도감으로 만든 페이지.
+별명 맞추기 퀴즈로 둘이서 함께 보는 용도.
 
 ## 기능
 
-- 🖼️ **갤러리 (`/`)** — 모바일 최적화 풀스크린 뷰어
-  - 시작 시 랜덤 순서로 사진 노출
-  - 5초마다 자동 페이드 전환
-  - 좌우 버튼 / 스와이프 / 키보드(←→) 수동 슬라이드
-  - 사진 탭 → 바텀시트로 편지 노출
-  - 편집 버튼 → 비밀번호 확인 → 편집/삭제 (삭제 시 컨펌)
-- ✉️ **업로드 (`/upload`)** — 사진 + 이름 + 편지 + 비밀번호
-- 🔒 비밀번호는 bcrypt 해시 저장. 평문은 서버에 남지 않음.
-- 💾 SQLite + 파일시스템. Railway 볼륨에 영속화.
+- 🦕 **갤러리 (`/`)** — 빈티지 표본 카드 슬라이더
+  - 시작 시 인트로 화면 (D-day, 설명)
+  - 사진 표본 순서 그대로 (셔플 없음)
+  - **2단계 별명 공개**: 탭하면 별명 → 한 번 더 탭하면 설명
+  - 자동 넘김 토글 (기본 OFF / 5초 / 10초)
+  - BGM 토글 (옵션)
+  - "처음부터" 버튼으로 1번부터 다시
+- 🔒 **큐레이터 (`/curator-xxxxxxxx`)** — 관리자 페이지
+  - 비밀번호 인증
+  - 표본 등록 (사진 + 별명 + 설명 + 날짜)
+  - 편집 / 삭제
+  - 화살표(↑↓)로 순서 변경
+  - 사진 최적화 자동 (1600px JPEG)
+
+## 데이터 모델
+
+```
+post {
+  id, order,            // order 순으로 갤러리 표시
+  nickname,             // 별명 (퀴즈 정답)
+  description,          // 설명 (사연)
+  captured_at,          // 날짜 (자유 형식)
+  image_file, image_mime,
+  created_at,
+}
+```
 
 ## 로컬 실행
 
 ```bash
 npm install
-npm start
+ADMIN_PASSWORD=mypassword npm start
 ```
 
 → http://localhost:3000
 
 ## Railway 배포
 
-### 1. GitHub 푸시
-이 폴더를 새 GitHub 저장소에 푸시하세요.
+### 1. GitHub push & Railway 연결
+새 브랜치 → Railway에서 **Deploy from GitHub repo** → 해당 브랜치 선택
 
-### 2. Railway 프로젝트 생성
-1. [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
-2. 이 저장소 선택
-3. 자동으로 Nixpacks가 Node.js 빌드 → `npm install` → `node server.js`
+### 2. 환경 변수 설정 (필수!)
+**Variables** 탭에서:
 
-### 3. 영속 볼륨 마운트 (중요!)
-Railway 컨테이너는 재배포할 때 디스크가 초기화되므로 반드시 볼륨을 붙여야 합니다.
+| 변수 | 값 | 설명 |
+|---|---|---|
+| `ADMIN_PASSWORD` | (강력한 비밀번호) | 큐레이터 인증 비번 |
+| `ADMIN_PATH` | (랜덤 문자열) | 관리자 페이지 URL의 시크릿 부분 |
 
-1. 서비스 → **Variables** 탭 → **New Variable** → 자동으로 `PORT`가 주입됨 (그대로 둠)
-2. 서비스 → **Settings** → **Volumes** → **+ New Volume**
-   - **Mount path**: `/data`
-   - 크기는 기본값(1GB)이면 충분
-3. **Deploy** → 환경 변수 `DATA_DIR`이 별도로 없으면 서버가 자동으로 `/data`를 사용합니다.
+`ADMIN_PATH` 안 정하면 기본값 `curator-7f3a9c2e` 사용.
+
+### 3. 볼륨 마운트 (필수!)
+**Volumes** 탭 → **+ New Volume**
+- Mount path: `/data`
+- 크기: 1GB
+
+이거 없으면 재배포 시 사진과 데이터가 모두 사라집니다.
 
 ### 4. 도메인 발급
-서비스 → **Settings** → **Networking** → **Generate Domain** → 학생들에게 공유:
-- 갤러리: `https://<your-app>.up.railway.app/`
-- 업로드: `https://<your-app>.up.railway.app/upload`
+**Settings → Networking → Generate Domain**
 
-## 환경 변수 (선택)
+- 갤러리: `https://<도메인>/`
+- 관리자: `https://<도메인>/curator-7f3a9c2e` (또는 본인 ADMIN_PATH)
 
-| 변수        | 기본값                              | 설명                            |
-| ----------- | ----------------------------------- | ------------------------------- |
-| `PORT`      | `3000`                              | Railway가 자동 주입             |
-| `DATA_DIR`  | `/data` (있으면) or `./data`        | SQLite + 업로드 이미지 저장 경로 |
+## 시작 날짜 변경
 
-## 폴더 구조
+`public/js/main.js` 맨 위에서 D-day 시작일 변경 가능:
 
-```
-.
-├── server.js              # Express API + 정적 서빙
-├── package.json
-├── railway.json
-├── public/
-│   ├── index.html         # 갤러리
-│   ├── upload.html        # 업로드
-│   ├── css/
-│   │   ├── main.css
-│   │   └── upload.css
-│   └── js/
-│       ├── main.js
-│       └── upload.js
-└── data/                  # (자동 생성) SQLite + 업로드 이미지
-    ├── app.db
-    └── uploads/
+```javascript
+const ANNIVERSARY_START = new Date('2025-05-24T00:00:00');
 ```
 
-## API 요약
+## API
 
-| Method | Endpoint                  | 설명                                     |
-| ------ | ------------------------- | ---------------------------------------- |
-| GET    | `/api/posts`              | 게시물 목록 (비밀번호 정보 제외)         |
-| GET    | `/api/posts/:id/image`    | 이미지 파일                              |
-| POST   | `/api/posts`              | 새 게시물 (multipart: author/message/password/image) |
-| POST   | `/api/posts/:id/verify`   | 비밀번호 검증 `{ password }` → `{ ok }`  |
-| PUT    | `/api/posts/:id`          | 수정 (multipart, password 필요)          |
-| DELETE | `/api/posts/:id`          | 삭제 `{ password }`                      |
+| Method | Endpoint | 설명 |
+|---|---|---|
+| GET    | `/api/posts` | 갤러리용 목록 (order 순) |
+| GET    | `/api/posts/:id/image` | 이미지 바이너리 |
+| POST   | `/api/admin/login` | 로그인 → 전체 posts 반환 |
+| POST   | `/api/admin/posts` | 표본 등록 (multipart) |
+| PUT    | `/api/admin/posts/:id` | 표본 편집 (multipart) |
+| POST   | `/api/admin/reorder` | 순서 일괄 업데이트 |
+| DELETE | `/api/admin/posts/:id` | 표본 삭제 |
 
-## 디자인 노트
+모든 admin API는 body에 `password` 필요.
 
-- 컬러: 따뜻한 크림 페이퍼 (#F4EFE7) + 브론즈 액센트 (#8B5E3C)
-- 타이포: Pretendard (본문, 한글) + Fraunces (세리프 헤딩, 영문)
-- 이미지: `object-fit: contain`으로 사진을 자르지 않고 풀-비저블, 빈 여백은 베이스 컬러로 채움
-- 편지 시트는 iOS 스타일 바텀시트 (드래그 다운으로 닫기 가능)
+## BGM 추가
 
-즐거운 스승의 날 되세요 🌿
+`public/bgm.mp3` 로 저장하면 갤러리 메뉴에서 켜고 끌 수 있어요.

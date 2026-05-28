@@ -1,17 +1,15 @@
 {
-  "name": "teachers-day",
+  "name": "haeryong-dinosaur-era",
   "version": "1.0.0",
-  "description": "Teacher's Day tribute page for the lab professor",
+  "description": "Our 1-year anniversary — dinosaur era field guide",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node server.js"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
     "express": "^4.19.2",
     "multer": "^1.4.5-lts.1"
   }

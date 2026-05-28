@@ -1,23 +1,15 @@
 // server.js
-// Teacher's Day tribute page — backend
-// Stack: Express + Multer + bcryptjs + flat-file JSON store
-// Why JSON instead of SQLite? No native deps, smaller image, faster cold start,
-// trivially backup-able. For a lab-sized dataset (≤ a few hundred entries),
-// performance is identical and we trade nothing meaningful.
+// Haeryong Dinosaur Era — 1주년 갤러리
+// Admin-only uploads. No per-post passwords; a single ADMIN_PASSWORD
+// gates the admin area where you add / edit / delete entries.
 
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const express = require('express');
 const multer = require('multer');
-const bcrypt = require('bcryptjs');
 
 // ───── Paths ─────────────────────────────────────────────────────────────
-// On Railway, mount a persistent volume at /data so the DB + images survive
-// re-deploys. Locally it falls back to ./data.
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
-const ADMIN_PATH = process.env.ADMIN_PATH || 'manage-7f3a9c2e';
-
 const DATA_DIR = process.env.DATA_DIR
   || (fs.existsSync('/data') && isWritable('/data') ? '/data' : path.join(__dirname, 'data'));
 const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
@@ -29,20 +21,19 @@ function isWritable(p) {
 
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
-// ───── Store (atomic JSON read/write with in-memory cache + lock) ────────
+// ───── Config ────────────────────────────────────────────────────────────
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+const ADMIN_PATH = process.env.ADMIN_PATH || 'curator-7f3a9c2e';
+
+// ───── Store ─────────────────────────────────────────────────────────────
 let cache = null;
 let writeQueue = Promise.resolve();
 
 function loadStore() {
   if (cache) return cache;
   if (fs.existsSync(DB_PATH)) {
-    try {
-      const txt = fs.readFileSync(DB_PATH, 'utf8');
-      cache = JSON.parse(txt);
-    } catch (e) {
-      console.error('Failed to parse DB; starting fresh:', e);
-      cache = { nextId: 1, posts: [] };
-    }
+    try { cache = JSON.parse(fs.readFileSync(DB_PATH, 'utf8')); }
+    catch (e) { console.error('DB parse failed:', e); cache = { nextId: 1, posts: [] }; }
   } else {
     cache = { nextId: 1, posts: [] };
   }
@@ -50,7 +41,6 @@ function loadStore() {
 }
 
 function saveStore() {
-  // Atomic write: tmp file then rename. Queued so concurrent writes don't race.
   writeQueue = writeQueue.then(() => new Promise((resolve, reject) => {
     const tmp = DB_PATH + '.tmp';
     fs.writeFile(tmp, JSON.stringify(cache, null, 2), (err) => {
@@ -68,7 +58,7 @@ const app = express();
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ───── Multer (upload handling) ──────────────────────────────────────────
+// ───── Multer ────────────────────────────────────────────────────────────
 const ALLOWED_MIME = new Set([
   'image/jpeg', 'image/jpg', 'image/png',
   'image/webp', 'image/gif', 'image/heic', 'image/heif',
@@ -85,10 +75,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB
+  limits: { fileSize: 15 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (ALLOWED_MIME.has(file.mimetype)) return cb(null, true);
-    cb(new Error('지원하지 않는 이미지 형식입니다 (jpg/png/webp/gif).'));
+    cb(new Error('지원하지 않는 이미지 형식입니다.'));
   },
 });
 
@@ -101,75 +91,42 @@ function sanitizeText(s, max = 2000) {
 function postPublic(p) {
   return {
     id: p.id,
-    author: p.author,
-    message: p.message,
+    order: p.order ?? 0,
+    nickname: p.nickname,
+    description: p.description || '',
+    captured_at: p.captured_at || '',
     created_at: p.created_at,
     image_url: `/api/posts/${p.id}/image`,
   };
 }
 
 function findPost(id) {
-  const store = loadStore();
-  return store.posts.find((p) => p.id === Number(id));
+  return loadStore().posts.find((p) => p.id === Number(id));
 }
 
-// ───── Routes ────────────────────────────────────────────────────────────
-// ───── Admin ─────────────────────────────────────────────────────────
-// Serve the admin page only at the secret path
-app.get(`/${ADMIN_PATH}`, (_req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-// Admin login — returns a list of all posts (with timestamps) if pw matches
-app.post('/api/admin/login', (req, res) => {
+function requireAdmin(req, res) {
   if (!ADMIN_PASSWORD) {
-    return res.status(503).json({ error: 'Admin password not configured.' });
+    res.status(503).json({ error: 'ADMIN_PASSWORD not configured.' });
+    return false;
   }
   if (String(req.body.password || '') !== ADMIN_PASSWORD) {
-    return res.status(403).json({ error: 'Wrong password.' });
+    res.status(403).json({ error: '비밀번호가 일치하지 않습니다.' });
+    return false;
   }
-  const store = loadStore();
-  const posts = store.posts
-    .slice()
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-    .map(postPublic);
-  res.json({ ok: true, posts });
-});
+  return true;
+}
 
-// Admin delete — requires the admin password
-app.delete('/api/admin/posts/:id', async (req, res) => {
-  if (!ADMIN_PASSWORD) {
-    return res.status(503).json({ error: 'Admin password not configured.' });
-  }
-  if (String(req.body.password || '') !== ADMIN_PASSWORD) {
-    return res.status(403).json({ error: 'Wrong password.' });
-  }
-  const store = loadStore();
-  const idx = store.posts.findIndex((p) => p.id === Number(req.params.id));
-  if (idx === -1) return res.status(404).json({ error: 'Not found.' });
-  const p = store.posts[idx];
-  const filePath = path.join(UPLOADS_DIR, p.image_file);
-  if (fs.existsSync(filePath)) { try { fs.unlinkSync(filePath); } catch {} }
-  store.posts.splice(idx, 1);
-  await saveStore();
-  res.json({ ok: true });
-});
-
-// Upload page (separate path per requirement #2)
-app.get('/upload', (_req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'upload.html'));
-});
-
-// List posts (public)
+// ───── Public routes ─────────────────────────────────────────────────────
 app.get('/api/posts', (_req, res) => {
   const store = loadStore();
-  const sorted = store.posts.slice().sort((a, b) =>
-    new Date(a.created_at) - new Date(b.created_at)
-  );
+  const sorted = store.posts.slice().sort((a, b) => {
+    const oa = a.order ?? 0, ob = b.order ?? 0;
+    if (oa !== ob) return oa - ob;
+    return new Date(a.created_at) - new Date(b.created_at);
+  });
   res.json(sorted.map(postPublic));
 });
 
-// Serve image binary
 app.get('/api/posts/:id/image', (req, res) => {
   const p = findPost(req.params.id);
   if (!p) return res.status(404).send('Not found');
@@ -180,67 +137,77 @@ app.get('/api/posts/:id/image', (req, res) => {
   fs.createReadStream(filePath).pipe(res);
 });
 
-// Create
-app.post('/api/posts', upload.single('image'), async (req, res) => {
+// ───── Admin routes ──────────────────────────────────────────────────────
+app.get(`/${ADMIN_PATH}`, (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+app.post('/api/admin/login', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const store = loadStore();
+  const posts = store.posts.slice().sort((a, b) => {
+    const oa = a.order ?? 0, ob = b.order ?? 0;
+    if (oa !== ob) return oa - ob;
+    return new Date(a.created_at) - new Date(b.created_at);
+  });
+  res.json({ ok: true, posts: posts.map(postPublic) });
+});
+
+app.post('/api/admin/posts', upload.single('image'), async (req, res) => {
   try {
-    const author = sanitizeText(req.body.author, 40);
-    const message = sanitizeText(req.body.message, 1500);
-    const password = typeof req.body.password === 'string' ? req.body.password : '';
+    if (!requireAdmin(req, res)) {
+      if (req.file) { try { fs.unlinkSync(path.join(UPLOADS_DIR, req.file.filename)); } catch {} }
+      return;
+    }
 
-    if (!author)  return res.status(400).json({ error: '이름을 입력해주세요.' });
-    if (!message) return res.status(400).json({ error: '편지를 입력해주세요.' });
-    if (password.length < 2) return res.status(400).json({ error: '비밀번호를 입력해주세요. (2자 이상)' });
-    if (!req.file) return res.status(400).json({ error: '사진을 첨부해주세요.' });
+    const nickname = sanitizeText(req.body.nickname, 60);
+    const description = sanitizeText(req.body.description, 1500);
+    const captured_at = sanitizeText(req.body.captured_at, 40);
 
-    const hash = await bcrypt.hash(password, 10);
+    if (!nickname) return res.status(400).json({ error: '별명을 입력해주세요.' });
+    if (!req.file)  return res.status(400).json({ error: '사진을 첨부해주세요.' });
+
     const store = loadStore();
     const id = store.nextId++;
+    const maxOrder = store.posts.reduce((m, p) => Math.max(m, p.order ?? 0), 0);
     const post = {
       id,
-      author,
-      message,
+      order: maxOrder + 1,
+      nickname,
+      description,
+      captured_at,
       image_file: req.file.filename,
       image_mime: req.file.mimetype,
-      password_hash: hash,
       created_at: new Date().toISOString(),
     };
     store.posts.push(post);
     await saveStore();
-
     res.json(postPublic(post));
   } catch (e) {
     console.error(e);
-    // Clean up the uploaded file if persistence failed
     if (req.file) { try { fs.unlinkSync(path.join(UPLOADS_DIR, req.file.filename)); } catch {} }
-    res.status(500).json({ error: e.message || '업로드 중 오류가 발생했습니다.' });
+    res.status(500).json({ error: e.message || '오류가 발생했습니다.' });
   }
 });
 
-// Verify password
-app.post('/api/posts/:id/verify', async (req, res) => {
-  const p = findPost(req.params.id);
-  if (!p) return res.status(404).json({ ok: false });
-  const ok = await bcrypt.compare(String(req.body.password || ''), p.password_hash);
-  res.json({ ok });
-});
-
-// Update (author / message / optional new image)
-app.put('/api/posts/:id', upload.single('image'), async (req, res) => {
+app.put('/api/admin/posts/:id', upload.single('image'), async (req, res) => {
   try {
+    if (!requireAdmin(req, res)) {
+      if (req.file) { try { fs.unlinkSync(path.join(UPLOADS_DIR, req.file.filename)); } catch {} }
+      return;
+    }
     const p = findPost(req.params.id);
     if (!p) {
       if (req.file) { try { fs.unlinkSync(path.join(UPLOADS_DIR, req.file.filename)); } catch {} }
       return res.status(404).json({ error: '게시물을 찾을 수 없습니다.' });
     }
 
-    const ok = await bcrypt.compare(String(req.body.password || ''), p.password_hash);
-    if (!ok) {
-      if (req.file) { try { fs.unlinkSync(path.join(UPLOADS_DIR, req.file.filename)); } catch {} }
-      return res.status(403).json({ error: '비밀번호가 일치하지 않습니다.' });
+    if (req.body.nickname !== undefined)    p.nickname    = sanitizeText(req.body.nickname, 60)    || p.nickname;
+    if (req.body.description !== undefined) p.description = sanitizeText(req.body.description, 1500);
+    if (req.body.captured_at !== undefined) p.captured_at = sanitizeText(req.body.captured_at, 40);
+    if (req.body.order !== undefined && !isNaN(Number(req.body.order))) {
+      p.order = Number(req.body.order);
     }
-
-    if (req.body.author !== undefined)  p.author = sanitizeText(req.body.author, 40) || p.author;
-    if (req.body.message !== undefined) p.message = sanitizeText(req.body.message, 1500) || p.message;
 
     if (req.file) {
       const oldPath = path.join(UPLOADS_DIR, p.image_file);
@@ -253,20 +220,30 @@ app.put('/api/posts/:id', upload.single('image'), async (req, res) => {
     res.json(postPublic(p));
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: e.message || '수정 중 오류가 발생했습니다.' });
+    res.status(500).json({ error: e.message || '오류가 발생했습니다.' });
   }
 });
 
-// Delete
-app.delete('/api/posts/:id', async (req, res) => {
+// Bulk reorder
+app.post('/api/admin/reorder', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const order = req.body.order;
+  if (!Array.isArray(order)) return res.status(400).json({ error: 'order must be array' });
+  const store = loadStore();
+  order.forEach((id, idx) => {
+    const p = store.posts.find((x) => x.id === Number(id));
+    if (p) p.order = idx + 1;
+  });
+  await saveStore();
+  res.json({ ok: true });
+});
+
+app.delete('/api/admin/posts/:id', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
   const store = loadStore();
   const idx = store.posts.findIndex((p) => p.id === Number(req.params.id));
   if (idx === -1) return res.status(404).json({ error: '게시물을 찾을 수 없습니다.' });
-
   const p = store.posts[idx];
-  const ok = await bcrypt.compare(String(req.body.password || ''), p.password_hash);
-  if (!ok) return res.status(403).json({ error: '비밀번호가 일치하지 않습니다.' });
-
   const filePath = path.join(UPLOADS_DIR, p.image_file);
   if (fs.existsSync(filePath)) { try { fs.unlinkSync(filePath); } catch {} }
   store.posts.splice(idx, 1);
@@ -274,7 +251,6 @@ app.delete('/api/posts/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
-// Error handler (multer file-too-large etc.)
 app.use((err, _req, res, _next) => {
   console.error(err);
   res.status(400).json({ error: err.message || '오류가 발생했습니다.' });
@@ -282,6 +258,7 @@ app.use((err, _req, res, _next) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✨ Teacher's Day server running on http://localhost:${PORT}`);
+  console.log(`🦕 Dinosaur Era running on http://localhost:${PORT}`);
   console.log(`   Data dir: ${DATA_DIR}`);
+  console.log(`   Admin path: /${ADMIN_PATH}`);
 });

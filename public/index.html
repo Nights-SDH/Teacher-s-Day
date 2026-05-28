@@ -3,287 +3,172 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" />
-  <meta name="theme-color" content="#F4EFE7" />
-  <title>스승의 날 · 우리 교수님께</title>
+  <meta name="theme-color" content="#E8DCC0" />
+  <title>해룡 공룡시대 · Haeryong Dinosaur Era</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Special+Elite&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <link rel="stylesheet" href="/css/main.css" />
 </head>
 <body>
-  <!-- Pull-to-refresh indicator -->
-  <div class="ptr" id="ptr" aria-hidden="true">
-    <div class="ptr__spinner"></div>
-  </div>
+  <!-- Paper texture overlay -->
+  <div class="paper-grain" aria-hidden="true"></div>
+  <div class="paper-vignette" aria-hidden="true"></div>
 
-  <!-- Top bar -->
+  <!-- Header / curatorial label -->
   <header class="topbar">
     <div class="topbar__brand">
-      <img class="brand-logo" src="/logo.png" alt="LAVA Lab" />
+      <span class="brand-mark" aria-hidden="true">
+        <!-- Stylized dino silhouette -->
+        <svg viewBox="0 0 40 40" width="32" height="32" fill="currentColor">
+          <path d="M5 28 C 5 24, 8 22, 11 22 L 14 22 C 14 18, 16 15, 19 14 L 19 11 C 19 9, 20 8, 21 8 C 22 8, 23 9, 23 11 L 23 13 C 26 13, 29 14, 31 17 L 33 17 C 35 17, 36 18, 36 20 L 33 20 C 33 23, 31 25, 28 26 L 28 31 L 25 31 L 25 27 L 17 27 L 17 31 L 14 31 L 14 27 L 11 27 C 9 27, 7 28, 6 30 Z"/>
+          <circle cx="21.5" cy="11" r="0.8" fill="#E8DCC0"/>
+        </svg>
+      </span>
       <span class="brand-text">
-        <em>Teacher's Day</em>
-        <span>스승의 날 · 우리 교수님께</span>
+        <em>Haeryong</em>
+        <span>Dinosaur Era · Est. 2025</span>
       </span>
     </div>
 
     <div class="topbar__right">
       <div class="topbar__count" id="topbarCount"></div>
-
-      <!-- Inline controls (visible on desktop, hidden on mobile) -->
-      <button class="speedbtn topbar__inline" id="speedBtn" aria-label="전환 속도" type="button">
-        <span id="speedLabel">5s</span>
-      </button>
-
-      <button class="musicbtn topbar__inline" id="musicBtn" aria-label="음악 켜기" aria-pressed="false">
-        <svg class="musicbtn__off" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-          <line x1="23" y1="9" x2="17" y2="15"></line>
-          <line x1="17" y1="9" x2="23" y2="15"></line>
-        </svg>
-        <svg class="musicbtn__on" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-        </svg>
-      </button>
-
-      <button class="iconcircle topbar__inline" id="contactBtn" aria-label="문의하기" type="button">
+      <button class="menubtn" id="menuBtn" aria-label="메뉴" aria-expanded="false" type="button">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="16" x2="12" y2="12"></line>
-          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
         </svg>
       </button>
 
-      <a class="addbtn topbar__inline" href="/upload" aria-label="편지 남기기">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </a>
-
-      <!-- Mobile menu trigger (hidden on desktop) -->
-      <div class="menu" id="menu">
-        <button class="menubtn" id="menuBtn" aria-label="메뉴" aria-expanded="false" type="button">
-          <svg class="menubtn__plus" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
+      <div class="menu__panel" id="menuPanel" aria-hidden="true">
+        <button class="menu__item" id="menuAuto" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <polyline points="12 7 12 12 15 14"></polyline>
           </svg>
+          <span>자동 넘김 <strong id="menuAutoLabel">OFF</strong></span>
         </button>
 
-        <div class="menu__panel" id="menuPanel" aria-hidden="true">
-          <a class="menu__item" href="/upload">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"></line>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-            <span>편지 남기기</span>
-          </a>
+        <button class="menu__item" id="menuMusic" type="button">
+          <svg class="menu__icon-off" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+          <svg class="menu__icon-on" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <span id="menuMusicLabel">BGM 켜기</span>
+        </button>
 
-          <button class="menu__item" id="menuMusic" type="button">
-            <svg class="menu__icon-off" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <line x1="23" y1="9" x2="17" y2="15"></line>
-              <line x1="17" y1="9" x2="23" y2="15"></line>
-            </svg>
-            <svg class="menu__icon-on" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-            </svg>
-            <span id="menuMusicLabel">음악 켜기</span>
-          </button>
-
-          <button class="menu__item" id="menuSpeed" type="button">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>
-            <span>전환 <strong id="menuSpeedLabel">5초</strong></span>
-          </button>
-
-          <div class="menu__divider"></div>
-
-          <button class="menu__item" id="menuContact" type="button">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>문의하기</span>
-          </button>
-        </div>
+        <button class="menu__item" id="menuRestart" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+          </svg>
+          <span>처음부터</span>
+        </button>
       </div>
     </div>
   </header>
 
-  <audio id="bgm" src="/bgm.mp3" loop preload="auto"></audio>
+  <!-- Intro screen (first load) -->
+  <section class="intro" id="intro">
+    <div class="intro__inner">
+      <div class="intro__seal">
+        <svg viewBox="0 0 100 100" width="80" height="80" fill="currentColor">
+          <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="0.5"/>
+          <text x="50" y="42" text-anchor="middle" font-family="Cormorant Garamond" font-size="9" font-style="italic" font-weight="500">Field Guide</text>
+          <text x="50" y="58" text-anchor="middle" font-family="Special Elite" font-size="8">SPECIMEN</text>
+          <text x="50" y="72" text-anchor="middle" font-family="Cormorant Garamond" font-size="7" letter-spacing="2">EST · 2025</text>
+        </svg>
+      </div>
+      <div class="intro__divider"></div>
+      <h1 class="intro__title"><em>Haeryong</em><br/>Dinosaur Era</h1>
+      <p class="intro__sub">우리의 1주년 · 별명 도감</p>
+      <p class="intro__dday" id="introDday">Day —</p>
+      <p class="intro__hint">사진을 보고 별명을 맞춰보세요.<br/>두 번 탭하면 설명이 펼쳐집니다.</p>
+      <button class="intro__cta" id="introStart" type="button">
+        <span>도감 펼치기</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+    </div>
+  </section>
 
-  <!-- Image stage -->
-  <main class="stage" id="stage" aria-label="추억 갤러리">
-    <div class="stage__viewport" id="viewport">
-      <!-- slides injected here -->
+  <!-- Stage -->
+  <main class="stage" id="stage" aria-label="공룡 도감" hidden>
+    <!-- Specimen plate frame -->
+    <div class="plate" id="plate">
+      <!-- Top label corners -->
+      <div class="plate__corner plate__corner--tl"></div>
+      <div class="plate__corner plate__corner--tr"></div>
+      <div class="plate__corner plate__corner--bl"></div>
+      <div class="plate__corner plate__corner--br"></div>
+
+      <!-- Index label (top) -->
+      <div class="plate__index">
+        <span class="plate__index-label">Plate</span>
+        <span class="plate__index-num" id="plateNum">—</span>
+        <span class="plate__index-of">of <span id="plateTotal">—</span></span>
+      </div>
+
+      <!-- Image viewport -->
+      <div class="plate__viewport" id="viewport">
+        <!-- slides injected here -->
+      </div>
+
+      <!-- Caption block (revealed in 2 steps) -->
+      <div class="plate__caption" id="caption">
+        <!-- Stage 0: hidden prompt -->
+        <div class="caption__prompt" id="capPrompt">
+          <span class="caption__tap-hint">탭하여 별명 확인 →</span>
+        </div>
+        <!-- Stage 1: nickname revealed -->
+        <div class="caption__name" id="capName" hidden>
+          <span class="caption__species-label">Species</span>
+          <strong class="caption__species" id="capSpecies">—</strong>
+          <span class="caption__more-hint">한 번 더 탭하여 기록 보기 →</span>
+        </div>
+        <!-- Stage 2: full description -->
+        <div class="caption__desc" id="capDesc" hidden>
+          <span class="caption__species-label">Species</span>
+          <strong class="caption__species" id="capSpecies2">—</strong>
+          <p class="caption__body" id="capBody"></p>
+          <div class="caption__meta">
+            <span id="capDate"></span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Controls -->
+    <!-- Nav -->
     <button class="nav nav--prev" id="prevBtn" aria-label="이전">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
     </button>
     <button class="nav nav--next" id="nextBtn" aria-label="다음">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
     </button>
-
-    <!-- Tap hint -->
-    <div class="tap-hint" id="tapHint">
-      <span>사진을 탭하면 편지가 보여요</span>
-    </div>
-
-    <!-- Dot indicators -->
-    <div class="dots" id="dots"></div>
   </main>
 
   <!-- Empty state -->
   <section class="empty" id="empty" hidden>
     <div class="empty__inner">
-      <div class="empty__dedication">To. Sung-Hee</div>
-      <span class="empty__mark"></span>
-      <h2>아직 올라온 추억이 없어요</h2>
-      <p>첫 번째 학생이 되어 사진과 편지를 남겨주세요.</p>
-      <a class="empty__cta" href="/upload">편지 남기러 가기</a>
+      <p class="empty__label">— No specimens cataloged —</p>
+      <p class="empty__hint">큐레이터가 첫 표본을 등록할 때까지 기다려 주세요.</p>
     </div>
   </section>
 
-  <!-- Letter bottom sheet -->
-  <div class="sheet" id="sheet" aria-hidden="true">
-    <div class="sheet__backdrop" data-close></div>
-    <div class="sheet__panel" id="sheetPanel" role="dialog" aria-modal="true">
-      <div class="sheet__handle" data-close></div>
-
-      <div class="sheet__head">
-        <div class="sheet__title">
-          <span class="sheet__from">from</span>
-          <strong id="letterAuthor">—</strong>
-        </div>
-        <div class="sheet__actions">
-          <button class="iconbtn" id="editBtn" aria-label="편집">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"></path></svg>
-          </button>
-          <button class="iconbtn" data-close aria-label="닫기">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="sheet__body">
-        <p class="letter" id="letterMessage"></p>
-        <div class="letter__date" id="letterDate"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Password modal -->
-  <div class="modal" id="pwModal" aria-hidden="true">
-    <div class="modal__backdrop" data-close></div>
-    <div class="modal__panel">
-      <h3>비밀번호 확인</h3>
-      <p class="modal__hint">편집을 위해 등록 시 입력한 비밀번호를 입력해 주세요.</p>
-      <input type="password" id="pwInput" placeholder="비밀번호" autocomplete="off" inputmode="text" />
-      <div class="modal__error" id="pwError"></div>
-      <div class="modal__actions">
-        <button class="btn btn--ghost" data-close>취소</button>
-        <button class="btn btn--primary" id="pwSubmit">확인</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Edit modal -->
-  <div class="modal" id="editModal" aria-hidden="true">
-    <div class="modal__backdrop" data-close></div>
-    <div class="modal__panel modal__panel--wide">
-      <div class="modal__head">
-        <h3>편지 편집</h3>
-        <button class="iconbtn" data-close aria-label="닫기">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-
-      <label class="field">
-        <span>이름</span>
-        <input type="text" id="editAuthor" maxlength="40" />
-      </label>
-
-      <label class="field">
-        <span>편지</span>
-        <textarea id="editMessage" rows="6" maxlength="1500"></textarea>
-      </label>
-
-      <label class="field">
-        <span>사진 교체 (선택)</span>
-        <input type="file" id="editImage" accept="image/*" />
-      </label>
-
-      <div class="modal__error" id="editError"></div>
-
-      <div class="modal__actions modal__actions--split">
-        <button class="btn btn--danger" id="deleteBtn">삭제</button>
-        <div class="modal__actions">
-          <button class="btn btn--ghost" data-close>취소</button>
-          <button class="btn btn--primary" id="saveBtn">저장</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Contact modal -->
-  <div class="modal" id="contactModal" aria-hidden="true">
-    <div class="modal__backdrop" data-close></div>
-    <div class="modal__panel modal__panel--wide">
-      <div class="modal__head">
-        <h3>문의하기</h3>
-        <button class="iconbtn" data-close aria-label="닫기">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-
-      <p class="contact__intro">
-        페이지를 사용하시다가 문제가 생기거나 궁금한 점이 있으시면 아래로 연락주세요.
-      </p>
-
-      <div class="contact__card">
-        <div class="contact__name">
-          <span class="contact__role">Developer</span>
-          <strong>신동환</strong>
-        </div>
-
-        <a class="contact__row" href="mailto:sdhqaa@naver.com">
-          <span class="contact__icon">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-          </span>
-          <span class="contact__label">
-            <span class="contact__kind">Email</span>
-            <span class="contact__value">sdhqaa@naver.com</span>
-          </span>
-          <svg class="contact__arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </a>
-
-        <a class="contact__row" href="https://github.com/Nights-SDH" target="_blank" rel="noopener noreferrer">
-          <span class="contact__icon">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.8-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2 1-.3 2-.4 3-.4s2 .1 3 .4c2.3-1.5 3.3-1.2 3.3-1.2.7 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
-          </span>
-          <span class="contact__label">
-            <span class="contact__kind">GitHub</span>
-            <span class="contact__value">@Nights-SDH</span>
-          </span>
-          <svg class="contact__arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <!-- Audio -->
+  <audio id="bgm" src="/bgm.mp3" loop preload="auto"></audio>
 
   <script src="/js/main.js"></script>
 </body>
