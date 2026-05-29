@@ -243,7 +243,13 @@
   }
 
   function closeForm() {
-    formModal.setAttribute('aria-hidden', 'true');
+  formModal.setAttribute('aria-hidden', 'true');
+  // Reset save button state when closing (safety net)
+  isSaving = false;
+  if (saveBtn) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = '저장';
+  }
   }
   formModal.querySelectorAll('[data-close]').forEach((el) =>
     el.addEventListener('click', closeForm));
