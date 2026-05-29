@@ -72,13 +72,26 @@
     return s;
   }
 
+  function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+  }
+
   // ───── Boot ───────────────────────────────────────────────────────────
   async function boot() {
     introDday.textContent = `Day ${dayCount()}`;
 
     try {
       const res = await fetch('/api/posts');
-      state.posts = await res.json();
+      const all = await res.json();
+      // Keep #1 fixed, shuffle the rest
+      state.posts = all.length > 1
+        ? [all[0], ...shuffle(all.slice(1))]
+        : all;
     } catch (e) {
       console.error(e);
     }
