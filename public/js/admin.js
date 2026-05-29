@@ -303,6 +303,10 @@
       render();
       closeForm();
       showToast(isNew ? '표본 등록됨' : '수정됨');
+      // Reset save state after success
+      isSaving = false;
+      saveBtn.disabled = false;
+      saveBtn.textContent = isNew ? '등록' : '저장';
     } catch (e) {
       console.error(e);
       formError.textContent = '네트워크 오류';
